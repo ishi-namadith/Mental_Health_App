@@ -7,7 +7,6 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-// Auth protection component to redirect users based on authentication status
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const segments = useSegments();
@@ -20,14 +19,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     const currentRoute = segments.join("/");
 
     if (!user) {
-      // If user is not authenticated and trying to access protected routes (except login)
-      if (currentRoute !== "(tabs)/index" && currentRoute.startsWith("(tabs)/")) {
-        router.push("/");
+      // If user is not authenticated and trying to access protected routes
+      if (currentRoute.startsWith("(tabs)/") || currentRoute === "") {
+        router.replace("/language");
       }
     } else {
-      // If user is authenticated and trying to access login screen
-      if (currentRoute === "(tabs)/index") {
-        router.push("/(tabs)/dashboard");
+      // If user is authenticated and trying to access onboarding screens
+      if (currentRoute === "language" || currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup" || currentRoute === "") {
+        router.replace("/(tabs)/dashboard");
       }
     }
   }, [user, segments, isLoading, router]);
@@ -51,6 +50,10 @@ export default function RootLayout() {
         <ThemeProvider value={DefaultTheme}>
           <AuthGuard>
             <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="language" />
+              <Stack.Screen name="terms" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="signup" />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" />
             </Stack>

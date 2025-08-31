@@ -1,10 +1,11 @@
 import { useAuth } from "@/context/AuthContext";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Stack, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 
 export default function TabsLayout() {
   const { user } = useAuth();
+
   if (user) {
     return (
       <Tabs
@@ -35,55 +36,14 @@ export default function TabsLayout() {
             tabBarIcon: ({ color }) => <FontAwesome size={24} name="user" color={color} />,
           }}
         />
-        {/* Hide these screens from tabs but keep them accessible */}
-        <Tabs.Screen
-          name="index"
-          options={{
-            tabBarButton: () => null,
-          }}
-        />
-        <Tabs.Screen
-          name="signup"
-          options={{
-            tabBarButton: () => null,
-          }}
-        />
-        <Tabs.Screen
-          name="termsandconditions"
-          options={{
-            tabBarButton: () => null,
-          }}
-        />
-        <Tabs.Screen
-          name="language"
-          options={{
-            tabBarButton: () => null,
-          }}
-        />
         <Tabs.Screen
           name="video-player"
           options={{
-            tabBarButton: () => null,
-          }}
+          href: null,
+        }}
         />
       </Tabs>
     );
   }
-
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: Platform.OS === "android" ? "none" : "default",
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="signup" />
-      <Stack.Screen name="termsandconditions" />
-      <Stack.Screen name="language" />
-      <Stack.Screen name="dashboard" />
-      <Stack.Screen name="account" />
-      <Stack.Screen name="video-player" />
-    </Stack>
-  );
+  return null;
 }

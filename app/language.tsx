@@ -13,7 +13,7 @@ export default function LanguageSelectionScreen() {
   const inputBackgroundColor = useThemeColor({}, "background");
 
   const handleLanguageSelect = (language: string) => {
-    router.push("/dashboard");
+    router.push("/terms" as any);
   };
 
   return (
@@ -51,11 +51,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "transparent",
-    justifyContent: "center", // Center vertically
+    justifyContent: "center",
+    alignItems: "center", 
   },
   centerContent: {
+    flex: 1,
     width: "100%",
     alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 20,
     backgroundColor: "transparent",
   },
@@ -71,7 +74,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   languageButton: {
-    width: "100%",
+    width: 200,
     height: 50,
     justifyContent: "center",
     alignItems: "center",

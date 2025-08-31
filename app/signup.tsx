@@ -31,14 +31,14 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
-      const { data, error } = await signUp(email, password);
+      const { error } = await signUp(email, password);
 
       if (error) {
         Alert.alert("Signup Error", error.message);
         return;
       }
 
-      Alert.alert("Success", "Your account has been created. Please check your email for verification instructions.", [{ text: "OK", onPress: () => router.replace("/") }]);
+      Alert.alert("Success", "Your account has been created. Please check your email for verification instructions.", [{ text: "OK", onPress: () => router.replace("/login" as any) }]);
     } catch (error) {
       Alert.alert("Unexpected Error", "An unexpected error occurred. Please try again.");
       console.error("Signup error:", error);
@@ -67,7 +67,7 @@ export default function SignupScreen() {
                 {loading ? <ActivityIndicator color="white" size="small" /> : <ThemedText style={styles.signupButtonText}>SIGN UP</ThemedText>}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => router.replace("/")} style={styles.loginContainer}>
+              <TouchableOpacity onPress={() => router.replace("/login" as any)} style={styles.loginContainer}>
                 <ThemedText>Already have an account? </ThemedText>
                 <ThemedText style={{ fontWeight: "bold" }}>Login</ThemedText>
               </TouchableOpacity>
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidView: {
     flex: 1,
-    justifyContent: "center", 
+    justifyContent: "center",
   },
   centerContent: {
     width: "100%",

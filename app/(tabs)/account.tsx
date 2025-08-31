@@ -24,7 +24,7 @@ export default function AccountScreen() {
         return;
       }
 
-      router.replace("/");
+      router.replace("/language" as any);
     } catch (error) {
       Alert.alert("Error", "Failed to sign out. Please try again.");
       console.error("Sign out error:", error);
@@ -34,7 +34,7 @@ export default function AccountScreen() {
   };
 
   if (!user) {
-    router.replace("/");
+    router.replace("/language" as any);
     return null;
   }
 

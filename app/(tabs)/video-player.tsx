@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEvent } from "expo";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -152,6 +152,23 @@ export default function VideoPlayer() {
     if (!player || player.duration <= 0) return 0;
     return (currentTime / player.duration) * 100;
   }, [currentTime, player]);
+
+  // Handle screen focus/blur to pause/resume video
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused, no need to do anything as video continues playing
+      return () => {
+        // Screen is unfocused, pause the video
+        if (player && isPlaying) {
+          player.pause();
+        }
+        // Clear any timeouts when leaving the screen
+        if (controlsTimeout.current) {
+          clearTimeout(controlsTimeout.current);
+        }
+      };
+    }, [player, isPlaying])
+  );
 
   // Handle video end event
   useEffect(() => {

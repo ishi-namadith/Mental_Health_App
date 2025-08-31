@@ -1,17 +1,17 @@
+import { BackgroundLayout } from "@/components/BackgroundLayout";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BackgroundLayout } from "@/components/BackgroundLayout";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 
 export default function TermsScreen() {
   const router = useRouter();
   const [accepted, setAccepted] = useState(false);
 
   const handleAgree = () => {
-    router.push("/language");
+    router.push("/login" as any);
   };
 
   const toggleAccept = () => {

@@ -33,7 +33,7 @@ export default function LoginScreen() {
       }
 
       if (data?.user) {
-        router.push("/(tabs)/dashboard");
+        router.replace("/(tabs)/dashboard");
       }
     } catch (error) {
       Alert.alert("Unexpected Error", "An unexpected error occurred. Please try again.");
@@ -61,7 +61,7 @@ export default function LoginScreen() {
                 {loading ? <ActivityIndicator color="white" size="small" /> : <ThemedText style={styles.loginButtonText}>LOGIN</ThemedText>}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => router.push("/signup")} style={styles.signupContainer}>
+              <TouchableOpacity onPress={() => router.push("/signup" as any)} style={styles.signupContainer}>
                 <ThemedText>Don&apos;t have an account? </ThemedText>
                 <ThemedText style={{ fontWeight: "bold" }}>Sign up</ThemedText>
               </TouchableOpacity>
