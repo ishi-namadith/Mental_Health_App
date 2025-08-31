@@ -7,37 +7,41 @@ import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { signIn } from "@/lib/supabase";
+import { signUp } from "@/lib/supabase";
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const inputBackgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
 
-  const handleLogin = async () => {
+  const handleSignup = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
 
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await signIn(email, password);
+      const { data, error } = await signUp(email, password);
 
       if (error) {
-        Alert.alert("Login Error", error.message);
+        Alert.alert("Signup Error", error.message);
         return;
       }
 
-      if (data?.user) {
-        router.push("/(tabs)/dashboard");
-      }
+      Alert.alert("Success", "Your account has been created. Please check your email for verification instructions.", [{ text: "OK", onPress: () => router.replace("/") }]);
     } catch (error) {
       Alert.alert("Unexpected Error", "An unexpected error occurred. Please try again.");
-      console.error("Login error:", error);
+      console.error("Signup error:", error);
     } finally {
       setLoading(false);
     }
@@ -49,7 +53,7 @@ export default function LoginScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidView} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}>
           <ThemedView style={styles.centerContent}>
             <ThemedText type="title" style={styles.title}>
-              Login
+              Sign Up
             </ThemedText>
 
             <ThemedView style={styles.inputContainer}>
@@ -57,13 +61,15 @@ export default function LoginScreen() {
 
               <TextInput style={[styles.input, { backgroundColor: inputBackgroundColor, color: textColor }]} placeholder="Password" placeholderTextColor="#888" secureTextEntry value={password} onChangeText={setPassword} />
 
-              <TouchableOpacity style={[styles.loginButton, loading && { opacity: 0.7 }]} onPress={handleLogin} disabled={loading}>
-                {loading ? <ActivityIndicator color="white" size="small" /> : <ThemedText style={styles.loginButtonText}>LOGIN</ThemedText>}
+              <TextInput style={[styles.input, { backgroundColor: inputBackgroundColor, color: textColor }]} placeholder="Confirm Password" placeholderTextColor="#888" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
+
+              <TouchableOpacity style={[styles.signupButton, loading && { opacity: 0.7 }]} onPress={handleSignup} disabled={loading}>
+                {loading ? <ActivityIndicator color="white" size="small" /> : <ThemedText style={styles.signupButtonText}>SIGN UP</ThemedText>}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => router.push("/signup")} style={styles.signupContainer}>
-                <ThemedText>Don&apos;t have an account? </ThemedText>
-                <ThemedText style={{ fontWeight: "bold" }}>Sign up</ThemedText>
+              <TouchableOpacity onPress={() => router.replace("/")} style={styles.loginContainer}>
+                <ThemedText>Already have an account? </ThemedText>
+                <ThemedText style={{ fontWeight: "bold" }}>Login</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -80,7 +86,7 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidView: {
     flex: 1,
-    justifyContent: "center", // Center vertically
+    justifyContent: "center", 
   },
   centerContent: {
     width: "100%",
@@ -106,7 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "transparent",
   },
-  loginButton: {
+  signupButton: {
     width: "40%",
     height: 50,
     backgroundColor: "#333",
@@ -115,12 +121,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
-  loginButtonText: {
+  signupButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
-  signupContainer: {
+  loginContainer: {
     flexDirection: "row",
     marginTop: 20,
     alignItems: "center",

@@ -1,63 +1,58 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BackgroundLayout } from '@/components/BackgroundLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { BackgroundLayout } from "@/components/BackgroundLayout";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { fetchVideoClips, VideoClip } from "@/lib/videoClips";
 
-// Mock data for sound clips
-const SOUND_CLIPS = [
-  {
-    id: '1',
-    title: 'Calm Meditation',
-    duration: '5:30',
-    category: 'Meditation',
-    description: 'A gentle guided meditation to help you find inner peace and relaxation.',
-  },
-  {
-    id: '2',
-    title: 'Stress Relief',
-    duration: '8:45',
-    category: 'Breathing',
-    description: 'Deep breathing exercises to help reduce anxiety and stress.',
-  },
-  {
-    id: '3',
-    title: 'Peaceful Sleep',
-    duration: '12:20',
-    category: 'Sleep',
-    description: 'Soothing sounds and guidance to help you fall asleep more easily.',
-  },
-  {
-    id: '4',
-    title: 'Morning Energy',
-    duration: '4:15',
-    category: 'Motivation',
-    description: 'Start your day with positive affirmations and energizing thoughts.',
-  },
-  {
-    id: '5',
-    title: 'Nature Sounds',
-    duration: '10:00',
-    category: 'Relaxation',
-    description: 'Immerse yourself in the calming sounds of nature for deep relaxation.',
-  },
-];
-
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.85;
 
 export default function Dashboard() {
-  const [selectedCard, setSelectedCard] = useState(null);
-  const cardScale = useSharedValue(1);
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
+  const router = useRouter();
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [videoClips, setVideoClips] = useState<VideoClip[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleCardPress = (id) => {
+  const cardScale = useSharedValue(1);
+  const backgroundColor = useThemeColor({}, "background");
+
+  useEffect(() => {
+    const loadVideoClips = async () => {
+      try {
+        setLoading(true);
+        const clips = await fetchVideoClips();
+        setVideoClips(clips);
+        setError(null);
+      } catch (err) {
+        console.error("Error loading video clips:", err);
+        setError("Failed to load video clips. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVideoClips();
+  }, []);
+
+  const handleCardPress = (id: string) => {
+    // Select/deselect the card
     setSelectedCard(id === selectedCard ? null : id);
     cardScale.value = withSpring(id === selectedCard ? 1 : 1.05);
+  };
+
+  const handlePlayPress = (clip: VideoClip) => {
+    // Navigate to video player page
+    router.push({
+      pathname: "/(tabs)/video-player" as any,
+      params: { videoId: clip.id },
+    });
   };
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -68,57 +63,50 @@ export default function Dashboard() {
 
   return (
     <BackgroundLayout>
-      <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>
-          Sound Library
-        </ThemedText>
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}>
+          <ThemedText type="title" style={styles.title}>
+            Library
+          </ThemedText>
 
-        <ThemedText style={styles.subtitle}>
-          Discover calming audio to help with your mental well-being
-        </ThemedText>
+          <ThemedText style={styles.subtitle}>Discover calming videos to help with your mental well-being</ThemedText>
 
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {SOUND_CLIPS.map((clip) => (
-            <TouchableOpacity 
-              key={clip.id} 
-              onPress={() => handleCardPress(clip.id)}
-              activeOpacity={0.9}
-            >
-              <Animated.View 
-                style={[
-                  styles.card, 
-                  { backgroundColor },
-                  clip.id === selectedCard && animatedStyle
-                ]}
-              >
-                <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-                  {clip.title}
-                </ThemedText>
-                
-                <ThemedView style={styles.cardMeta}>
-                  <ThemedText style={styles.cardCategory}>{clip.category}</ThemedText>
-                  <ThemedText style={styles.cardDuration}>{clip.duration}</ThemedText>
-                </ThemedView>
-                
-                {clip.id === selectedCard && (
-                  <ThemedText style={styles.cardDescription}>
-                    {clip.description}
-                  </ThemedText>
-                )}
-                
-                {clip.id === selectedCard && (
-                  <TouchableOpacity style={styles.playButton} onPress={() => alert(`Playing ${clip.title}`)}>
-                    <ThemedText style={styles.playButtonText}>PLAY</ThemedText>
+          {loading ? (
+            <ActivityIndicator size="large" color="#0a7ea4" style={styles.loader} />
+          ) : error ? (
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          ) : (
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+              {videoClips.length === 0 ? (
+                <ThemedText style={styles.noClipsText}>No video clips available</ThemedText>
+              ) : (
+                videoClips.map((clip) => (
+                  <TouchableOpacity key={clip.id} onPress={() => handleCardPress(clip.id)} activeOpacity={0.9}>
+                    <Animated.View style={[styles.card, { backgroundColor }, clip.id === selectedCard && animatedStyle]}>
+                      {/* Show thumbnail if available */}
+                      {clip.thumbnail && <Image source={{ uri: clip.thumbnail }} style={styles.thumbnail} resizeMode="cover" />}
+
+                      <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                        {clip.title}
+                      </ThemedText>
+
+                      <ThemedView style={styles.cardMeta}>
+                        <ThemedText style={styles.cardDuration}>{clip.duration}</ThemedText>
+                      </ThemedView>
+
+                      {clip.id === selectedCard && (
+                        <TouchableOpacity style={styles.playButton} onPress={() => handlePlayPress(clip)}>
+                          <ThemedText style={styles.playButtonText}>PLAY</ThemedText>
+                        </TouchableOpacity>
+                      )}
+                    </Animated.View>
                   </TouchableOpacity>
-                )}
-              </Animated.View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </ThemedView>
+                ))
+              )}
+            </ScrollView>
+          )}
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </BackgroundLayout>
   );
 }
@@ -128,19 +116,33 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 60,
-    backgroundColor: 'transparent', // Make container transparent to show background
+    backgroundColor: "transparent", // Make container transparent to show background
+  },
+  accountButton: {
+    position: "absolute",
+    top: 10,
+    right: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    zIndex: 10,
+  },
+  accountButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
   title: {
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 30,
     opacity: 0.7,
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingBottom: 30,
   },
   card: {
@@ -158,36 +160,47 @@ const styles = StyleSheet.create({
     shadowRadius: 2.62,
     elevation: 4,
   },
+  thumbnail: {
+    width: "100%",
+    height: 100,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
   cardTitle: {
     fontSize: 18,
     marginBottom: 10,
   },
   cardMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "center",
     marginBottom: 15,
-  },
-  cardCategory: {
-    opacity: 0.7,
-    fontSize: 14,
   },
   cardDuration: {
     opacity: 0.7,
     fontSize: 14,
   },
-  cardDescription: {
-    marginBottom: 15,
-    lineHeight: 22,
-  },
   playButton: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: "#0a7ea4",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   playButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
+  },
+  loader: {
+    marginTop: 50,
+  },
+  errorText: {
+    textAlign: "center",
+    color: "red",
+    marginTop: 50,
+  },
+  noClipsText: {
+    textAlign: "center",
+    marginTop: 50,
+    opacity: 0.7,
   },
 });

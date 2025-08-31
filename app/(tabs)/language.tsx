@@ -1,57 +1,48 @@
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from "expo-router";
+import React from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BackgroundLayout } from '@/components/BackgroundLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { BackgroundLayout } from "@/components/BackgroundLayout";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function LanguageSelectionScreen() {
   const router = useRouter();
-  const inputBackgroundColor = useThemeColor({}, 'background');
+  const inputBackgroundColor = useThemeColor({}, "background");
 
   const handleLanguageSelect = (language: string) => {
-    // Store selected language preference in AsyncStorage or context
-    console.log(`Selected language: ${language}`);
-    // Navigate to dashboard
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   return (
     <BackgroundLayout>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.centerContent}>
-          <ThemedText type="title" style={styles.title}>
-            Initial Language Selection
-          </ThemedText>
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}>
+          <ThemedView style={styles.centerContent}>
+            <ThemedText type="title" style={styles.title}>
+              Initial Language Selection
+            </ThemedText>
 
-          <ThemedView style={styles.languageContainer}>
-            <TouchableOpacity 
-              style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} 
-              onPress={() => handleLanguageSelect('Sinhala')}
-            >
-              <ThemedText style={styles.languageText}>Sinhala</ThemedText>
-            </TouchableOpacity>
+            <ThemedView style={styles.languageContainer}>
+              <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("Sinhala")}>
+                <ThemedText style={styles.languageText}>Sinhala</ThemedText>
+              </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]}
-              onPress={() => handleLanguageSelect('English')}
-            >
-              <ThemedText style={styles.languageText}>English</ThemedText>
-            </TouchableOpacity>
+              <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("English")}>
+                <ThemedText style={styles.languageText}>English</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
           </ThemedView>
-        </ThemedView>
 
-        <TouchableOpacity 
-          style={styles.technicalLink}
-          onPress={() => alert("Technical help to be implemented")}
-        >
-          <ThemedText type="link" style={styles.smallText}>
-            technical help
-          </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
+          <TouchableOpacity style={styles.technicalLink} onPress={() => alert("Technical help to be implemented")}>
+            <ThemedText type="link" style={styles.smallText}>
+              technical help
+            </ThemedText>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </BackgroundLayout>
   );
 }
@@ -59,39 +50,39 @@ export default function LanguageSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'center', // Center vertically
+    backgroundColor: "transparent",
+    justifyContent: "center", // Center vertically
   },
   centerContent: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     paddingHorizontal: 20,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   title: {
     marginBottom: 40,
-    textAlign: 'center',
+    textAlign: "center",
   },
   languageContainer: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     gap: 16,
     maxWidth: 300,
-    backgroundColor: 'transparent'
+    backgroundColor: "transparent",
   },
   languageButton: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 4,
   },
   languageText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   technicalLink: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     right: 20,
   },
