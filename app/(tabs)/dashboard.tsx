@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -83,9 +83,6 @@ export default function Dashboard() {
                 videoClips.map((clip) => (
                   <TouchableOpacity key={clip.id} onPress={() => handleCardPress(clip.id)} activeOpacity={0.9}>
                     <Animated.View style={[styles.card, { backgroundColor }, clip.id === selectedCard && animatedStyle]}>
-                      {/* Show thumbnail if available */}
-                      {clip.thumbnail && <Image source={{ uri: clip.thumbnail }} style={styles.thumbnail} resizeMode="cover" />}
-
                       <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
                         {clip.title}
                       </ThemedText>
@@ -159,12 +156,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.23,
     shadowRadius: 2.62,
     elevation: 4,
-  },
-  thumbnail: {
-    width: "100%",
-    height: 100,
-    borderRadius: 8,
-    marginBottom: 10,
   },
   cardTitle: {
     fontSize: 18,

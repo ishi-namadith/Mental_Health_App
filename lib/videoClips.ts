@@ -1,5 +1,4 @@
 import { Audio } from "expo-av";
-import * as VideoThumbnails from "expo-video-thumbnails";
 import { supabase } from "./supabase";
 
 export interface VideoClip {
@@ -7,7 +6,6 @@ export interface VideoClip {
   title: string;
   duration: string;
   url: string;
-  thumbnail?: string;
 }
 
 const getVideoDuration = async (uri: string): Promise<string> => {
@@ -31,19 +29,6 @@ const getVideoDuration = async (uri: string): Promise<string> => {
   } catch (error) {
     console.error("Error getting video duration:", error);
     return "0:00";
-  }
-};
-
-const generateVideoThumbnail = async (uri: string): Promise<string | undefined> => {
-  try {
-    const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(uri, {
-      time: 1000,
-      quality: 0.7,
-    });
-    return thumbnailUri;
-  } catch (error) {
-    console.error("Error generating video thumbnail:", error);
-    return undefined;
   }
 };
 
@@ -76,15 +61,11 @@ export const fetchVideoClips = async (): Promise<VideoClip[]> => {
         // Get video duration
         const duration = await getVideoDuration(fileData.signedUrl);
 
-        // Generate thumbnail
-        const thumbnail = await generateVideoThumbnail(fileData.signedUrl);
-
         return {
           id: file.id || file.name, // Use file name as id if no id available
           title: title,
           duration: duration,
           url: fileData.signedUrl,
-          thumbnail: thumbnail,
         };
       })
     );
