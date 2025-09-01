@@ -6,14 +6,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLanguage } from "@/context/LanguageContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function LanguageSelectionScreen() {
   const router = useRouter();
+  const { setLanguage } = useLanguage();
   const inputBackgroundColor = useThemeColor({}, "background");
 
-  const handleLanguageSelect = (language: string) => {
-    router.push("/terms" as any);
+  const handleLanguageSelect = async (language: "English" | "Sinhala") => {
+    try {
+      await setLanguage(language);
+      router.push("/terms" as any);
+    } catch (error) {
+      console.error("Error setting language:", error);
+      // You could add error handling/toast here if needed
+    }
   };
 
   return (
@@ -26,21 +34,15 @@ export default function LanguageSelectionScreen() {
             </ThemedText>
 
             <ThemedView style={styles.languageContainer}>
-              {/* <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("Sinhala")}>
+              <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("Sinhala")}>
                 <ThemedText style={styles.languageText}>Sinhala</ThemedText>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
 
               <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("English")}>
                 <ThemedText style={styles.languageText}>English</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
-
-          <TouchableOpacity style={styles.technicalLink} onPress={() => alert("Technical help to be implemented")}>
-            <ThemedText type="link" style={styles.smallText}>
-              technical help
-            </ThemedText>
-          </TouchableOpacity>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </BackgroundLayout>
@@ -52,7 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
     justifyContent: "center",
-    alignItems: "center", 
+    alignItems: "center",
   },
   centerContent: {
     flex: 1,
@@ -83,11 +85,6 @@ const styles = StyleSheet.create({
   languageText: {
     fontSize: 16,
     fontWeight: "500",
-  },
-  technicalLink: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
   },
   smallText: {
     fontSize: 14,

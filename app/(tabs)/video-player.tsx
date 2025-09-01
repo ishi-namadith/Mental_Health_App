@@ -10,6 +10,7 @@ import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
+import { getVideoFolderPath, useLanguage } from "@/context/LanguageContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { analyticsService } from "@/lib/analytics";
 import { fetchVideoClips, VideoClip } from "@/lib/videoClips";
@@ -19,6 +20,7 @@ export default function VideoPlayer() {
   const params = useLocalSearchParams();
   const { videoId } = params;
   const { user } = useAuth();
+  const { selectedLanguage } = useLanguage();
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoViewRef = useRef<VideoView>(null);
   const isPlayingRef = useRef<boolean>(false);
@@ -38,7 +40,16 @@ export default function VideoPlayer() {
     const loadVideoClips = async () => {
       try {
         setLoading(true);
-        const clips = await fetchVideoClips();
+
+        if (!selectedLanguage) {
+          setVideoClips([]);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
+        const folderPath = getVideoFolderPath(selectedLanguage);
+        const clips = await fetchVideoClips(folderPath);
         setVideoClips(clips);
 
         // Find the index of the current video
@@ -54,7 +65,7 @@ export default function VideoPlayer() {
     };
 
     loadVideoClips();
-  }, [videoId]);
+  }, [videoId, selectedLanguage]);
 
   // Initialize video player only after we have the current video
   const player = useVideoPlayer(currentVideo?.url || null, (player) => {

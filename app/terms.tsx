@@ -1,14 +1,23 @@
 import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useLanguage } from "@/context/LanguageContext";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TermsScreen() {
   const router = useRouter();
+  const { selectedLanguage } = useLanguage();
   const [accepted, setAccepted] = useState(false);
+
+  // Redirect to language selection if no language is selected
+  useEffect(() => {
+    if (!selectedLanguage) {
+      router.replace("/language");
+    }
+  }, [selectedLanguage, router]);
 
   const handleAgree = () => {
     router.push("/login" as any);

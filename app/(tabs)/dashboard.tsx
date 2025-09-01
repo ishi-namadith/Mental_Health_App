@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { getVideoFolderPath, useLanguage } from "@/context/LanguageContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { fetchVideoClips, VideoClip } from "@/lib/videoClips";
 
@@ -15,6 +16,7 @@ const CARD_WIDTH = width * 0.85;
 
 export default function Dashboard() {
   const router = useRouter();
+  const { selectedLanguage } = useLanguage();
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [videoClips, setVideoClips] = useState<VideoClip[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,7 +29,16 @@ export default function Dashboard() {
     const loadVideoClips = async () => {
       try {
         setLoading(true);
-        const clips = await fetchVideoClips();
+
+        if (!selectedLanguage) {
+          setVideoClips([]);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
+        const folderPath = getVideoFolderPath(selectedLanguage);
+        const clips = await fetchVideoClips(folderPath);
         setVideoClips(clips);
         setError(null);
       } catch (err) {
@@ -39,7 +50,7 @@ export default function Dashboard() {
     };
 
     loadVideoClips();
-  }, []);
+  }, [selectedLanguage]);
 
   const handleCardPress = (id: string) => {
     // Select/deselect the card

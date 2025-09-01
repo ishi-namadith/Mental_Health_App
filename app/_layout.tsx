@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -9,11 +10,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
+  const { selectedLanguage, isLoading: languageLoading } = useLanguage();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || languageLoading) return;
 
     // Get current route
     const currentRoute = segments.join("/");
@@ -21,7 +23,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!user) {
       // If user is not authenticated and trying to access protected routes
       if (currentRoute.startsWith("(tabs)/")) {
-        router.replace("/language");
+        // Check if language is selected, if not go to language selection
+        if (!selectedLanguage) {
+          router.replace("/language");
+        } else {
+          router.replace("/login");
+        }
       }
     } else {
       // If user is authenticated and trying to access onboarding screens
@@ -29,7 +36,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace("/(tabs)/dashboard");
       }
     }
-  }, [user, segments, isLoading, router]);
+  }, [user, selectedLanguage, segments, isLoading, languageLoading, router]);
 
   return <>{children}</>;
 }
@@ -46,22 +53,24 @@ export default function RootLayout() {
   // Always use light theme
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <ThemeProvider value={DefaultTheme}>
-          <AuthGuard>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="language" />
-              <Stack.Screen name="terms" />
-              <Stack.Screen name="login" />
-              <Stack.Screen name="signup" />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </AuthGuard>
-          <StatusBar style="light" />
-        </ThemeProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ThemeProvider value={DefaultTheme}>
+            <AuthGuard>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="language" />
+                <Stack.Screen name="terms" />
+                <Stack.Screen name="login" />
+                <Stack.Screen name="signup" />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </AuthGuard>
+            <StatusBar style="light" />
+          </ThemeProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

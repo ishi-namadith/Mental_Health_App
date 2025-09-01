@@ -32,10 +32,10 @@ const getVideoDuration = async (uri: string): Promise<string> => {
   }
 };
 
-// Function to fetch video clips from Supabase storage bucket
-export const fetchVideoClips = async (): Promise<VideoClip[]> => {
+// Function to fetch video clips from Supabase storage bucket folder
+export const fetchVideoClips = async (folderPath: string): Promise<VideoClip[]> => {
   try {
-    const { data, error } = await supabase.storage.from("mhvideoclips").list();
+    const { data, error } = await supabase.storage.from("mhvideoclips").list(folderPath);
     if (error) {
       throw new Error(`Error listing video clips: ${error.message}`);
     }
@@ -48,8 +48,9 @@ export const fetchVideoClips = async (): Promise<VideoClip[]> => {
 
     const videoClipsWithUrls = await Promise.all(
       videoFiles.map(async (file) => {
-        // Generate a signed URL for the video file
-        const { data: fileData } = await supabase.storage.from("mhvideoclips").createSignedUrl(file.name, 3600); // URL valid for 1 hour
+        // Generate a signed URL for the video file (include folder path)
+        const filePath = `${folderPath}/${file.name}`;
+        const { data: fileData } = await supabase.storage.from("mhvideoclips").createSignedUrl(filePath, 3600); // URL valid for 1 hour
 
         if (!fileData?.signedUrl) {
           throw new Error(`Failed to generate signed URL for ${file.name}`);
