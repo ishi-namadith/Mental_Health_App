@@ -281,7 +281,6 @@ export default function VideoPlayer() {
       <BackgroundLayout>
         <SafeAreaView style={styles.container}>
           <ActivityIndicator size="large" color="#0a7ea4" style={styles.loader} />
-          <ThemedText style={styles.loadingText}>Loading video...</ThemedText>
         </SafeAreaView>
       </BackgroundLayout>
     );

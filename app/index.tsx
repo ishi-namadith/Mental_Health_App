@@ -1,16 +1,11 @@
 import { useAuth } from "@/context/AuthContext";
 import { Redirect } from "expo-router";
-import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function IndexScreen() {
-  const { user, isLoading, error } = useAuth();
+  const { user, isLoading, error } = useAuth();;
 
-  useEffect(() => {
-    console.log("Index screen - Auth state:", { user: !!user, isLoading, error });
-  }, [user, isLoading, error]);
-
-  // Show loading spinner while checking auth state
+  // Show loading spinner
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
@@ -28,10 +23,8 @@ export default function IndexScreen() {
 
   // Redirect based on auth state
   if (user) {
-    console.log("Redirecting to dashboard");
     return <Redirect href="/(tabs)/dashboard" />;
   } else {
-    console.log("Redirecting to language");
     return <Redirect href="/language" />;
   }
 }

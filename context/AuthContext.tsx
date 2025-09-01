@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Get session
         const { session, error: sessionError } = await getSession();
         if (!mounted) return;
-        
+
         if (sessionError) {
           setState((prev) => ({ ...prev, error: sessionError.message, isLoading: false }));
           return;
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Get user
         const { user, error: userError } = await getCurrentUser();
         if (!mounted) return;
-        
+
         if (userError) {
           setState((prev) => ({ ...prev, error: userError.message, isLoading: false }));
           return;
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState({ user, session, isLoading: false, error: null });
       } catch (error) {
         if (!mounted) return;
-        
+
         setState((prev) => ({
           ...prev,
           error: error instanceof Error ? error.message : "Unknown error occurred",
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      
+
       if (session) {
         const { user } = await getCurrentUser();
         setState({ user: user ?? null, session, isLoading: false, error: null });
