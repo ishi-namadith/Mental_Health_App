@@ -20,12 +20,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (!user) {
       // If user is not authenticated and trying to access protected routes
-      if (currentRoute.startsWith("(tabs)/") || currentRoute === "") {
+      if (currentRoute.startsWith("(tabs)/")) {
         router.replace("/language");
       }
     } else {
       // If user is authenticated and trying to access onboarding screens
-      if (currentRoute === "language" || currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup" || currentRoute === "") {
+      if (currentRoute === "language" || currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup") {
         router.replace("/(tabs)/dashboard");
       }
     }
@@ -50,6 +50,7 @@ export default function RootLayout() {
         <ThemeProvider value={DefaultTheme}>
           <AuthGuard>
             <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
               <Stack.Screen name="language" />
               <Stack.Screen name="terms" />
               <Stack.Screen name="login" />
