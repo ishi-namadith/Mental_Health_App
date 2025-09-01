@@ -9,15 +9,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/context/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { analyticsService } from "@/lib/analytics";
 import { fetchVideoClips, VideoClip } from "@/lib/videoClips";
 
 export default function VideoPlayer() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { videoId } = params;
+  const { user } = useAuth();
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoViewRef = useRef<VideoView>(null);
+  const isPlayingRef = useRef<boolean>(false);
+  const currentTimeRef = useRef<number>(0);
 
   const [videoClips, setVideoClips] = useState<VideoClip[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
@@ -28,47 +33,7 @@ export default function VideoPlayer() {
   const textColor = useThemeColor({}, "text");
   const currentVideo = videoClips[currentVideoIndex];
 
-  // Initialize video player with proper setup
-  const player = useVideoPlayer(currentVideo?.url || null, (player) => {
-    if (player && currentVideo?.url) {
-      player.timeUpdateEventInterval = 0.1;
-      player.loop = false;
-      player.play();
-    }
-  });
-
-  // Use expo event hooks for better event handling
-  const { isPlaying } = useEvent(player, "playingChange", { isPlaying: player.playing });
-  const timeUpdateEvent = useEvent(player, "timeUpdate", {
-    currentTime: player.currentTime,
-    bufferedPosition: 0,
-    currentLiveTimestamp: null,
-    currentOffsetFromLive: null,
-  });
-  const currentTime = timeUpdateEvent?.currentTime || 0;
-
-  // Auto-hide controls after 3 seconds
-  const resetControlsTimer = useCallback(() => {
-    if (controlsTimeout.current) {
-      clearTimeout(controlsTimeout.current);
-    }
-    controlsTimeout.current = setTimeout(() => {
-      setShowControls(false);
-    }, 3000);
-  }, []);
-
-  useEffect(() => {
-    if (showControls) {
-      resetControlsTimer();
-    }
-    return () => {
-      if (controlsTimeout.current) {
-        clearTimeout(controlsTimeout.current);
-      }
-    };
-  }, [showControls, resetControlsTimer]);
-
-  // Load video clips and find current video index
+  // Load video clips first
   useEffect(() => {
     const loadVideoClips = async () => {
       try {
@@ -91,35 +56,123 @@ export default function VideoPlayer() {
     loadVideoClips();
   }, [videoId]);
 
+  // Initialize video player only after we have the current video
+  const player = useVideoPlayer(currentVideo?.url || null, (player) => {
+    if (player && currentVideo?.url) {
+      player.timeUpdateEventInterval = 0.1;
+      player.loop = false;
+      player.play();
+    }
+  });
+
+  // Use expo event hooks for better event handling - only if player exists
+  const { isPlaying } = useEvent(player, "playingChange", { isPlaying: player?.playing || false });
+
+  const timeUpdateEvent = useEvent(player, "timeUpdate", {
+    currentTime: player?.currentTime || 0,
+    bufferedPosition: 0,
+    currentLiveTimestamp: null,
+    currentOffsetFromLive: null,
+  });
+  const currentTime = timeUpdateEvent?.currentTime || 0;
+
+  // Update refs to track current values for cleanup functions
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
+  // Auto-hide controls after 3 seconds
+  const resetControlsTimer = useCallback(() => {
+    if (controlsTimeout.current) {
+      clearTimeout(controlsTimeout.current);
+    }
+    controlsTimeout.current = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    if (showControls) {
+      resetControlsTimer();
+    }
+    return () => {
+      if (controlsTimeout.current) {
+        clearTimeout(controlsTimeout.current);
+      }
+    };
+  }, [showControls, resetControlsTimer]);
+
   // Update player source when current video changes
   useEffect(() => {
-    if (currentVideo?.url && player) {
-      // Use replaceAsync for better performance on iOS
-      if (player.replaceAsync) {
-        player
-          .replaceAsync(currentVideo.url)
-          .then(() => {
+    if (currentVideo?.url && player && user && !loading) {
+      // Add safety check to ensure player is not released
+      try {
+        // Start analytics session
+        const startAnalytics = async () => {
+          try {
+            await analyticsService.startPlaySession(user.id, currentVideo.id, currentVideo.title, player.duration || 0);
+          } catch (error) {
+            console.error("Failed to start analytics session:", error);
+          }
+        };
+
+        startAnalytics();
+
+        // Use replaceAsync for better performance on iOS
+        if (player.replaceAsync && typeof player.replaceAsync === "function") {
+          player
+            .replaceAsync(currentVideo.url)
+            .then(() => {
+              if (player && typeof player.play === "function") {
+                player.play();
+              }
+            })
+            .catch((error) => {
+              // Fallback to replace if replaceAsync fails
+              if (player && typeof player.replace === "function") {
+                player.replace(currentVideo.url);
+                if (typeof player.play === "function") {
+                  player.play();
+                }
+              }
+            });
+        } else if (player.replace && typeof player.replace === "function") {
+          player.replace(currentVideo.url);
+          if (typeof player.play === "function") {
             player.play();
-          })
-          .catch(() => {
-            // Fallback to replace if replaceAsync fails
-            player.replace(currentVideo.url);
-            player.play();
-          });
-      } else {
-        player.replace(currentVideo.url);
-        player.play();
+          }
+        }
+      } catch (error) {
+        console.error("Error updating video source:", error);
       }
     }
-  }, [currentVideoIndex, currentVideo, player]);
+  }, [currentVideoIndex, currentVideo, player, user, loading]);
 
-  const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
-      player?.pause();
-    } else {
-      player?.play();
+  const handlePlayPause = useCallback(async () => {
+    if (!player) {
+      return;
     }
-  }, [isPlaying, player]);
+
+    try {
+      if (isPlaying) {
+        if (typeof player.pause === "function") {
+          player.pause();
+        }
+        await analyticsService.logPlayEvent("pause", currentTime);
+      } else {
+        if (typeof player.play === "function") {
+          player.play();
+        }
+        await analyticsService.logPlayEvent(currentTime === 0 ? "play" : "resume", currentTime);
+      }
+    } catch (error) {
+      console.error("Error in handlePlayPause:", error);
+    }
+  }, [isPlaying, player, currentTime]);
 
   const handlePrevious = useCallback(() => {
     if (currentVideoIndex > 0) {
@@ -144,13 +197,19 @@ export default function VideoPlayer() {
     setShowControls(!showControls);
   }, [showControls]);
 
-  const handleBack = useCallback(() => {
+  const handleBack = useCallback(async () => {
+    await analyticsService.endPlaySession();
     router.back();
   }, [router]);
 
   const getProgressPercentage = useCallback(() => {
-    if (!player || player.duration <= 0) return 0;
-    return (currentTime / player.duration) * 100;
+    try {
+      if (!player || !player.duration || player.duration <= 0) return 0;
+      return (currentTime / player.duration) * 100;
+    } catch (error) {
+      console.error("Error getting progress percentage:", error);
+      return 0;
+    }
   }, [currentTime, player]);
 
   // Handle screen focus/blur to pause/resume video
@@ -158,32 +217,64 @@ export default function VideoPlayer() {
     useCallback(() => {
       // Screen is focused, no need to do anything as video continues playing
       return () => {
-        // Screen is unfocused, pause the video
-        if (player && isPlaying) {
-          player.pause();
-        }
-        // Clear any timeouts when leaving the screen
-        if (controlsTimeout.current) {
-          clearTimeout(controlsTimeout.current);
+        try {
+          // Screen is unfocused, pause the video
+          // Use the ref values to avoid accessing potentially released player object
+          if (player && typeof player.pause === "function" && isPlayingRef.current) {
+            player.pause();
+            // Use currentTimeRef to avoid accessing player.currentTime
+            analyticsService.logPlayEvent("pause", currentTimeRef.current);
+          }
+          // End analytics session when leaving screen
+          analyticsService.endPlaySession();
+          // Clear any timeouts when leaving the screen
+          if (controlsTimeout.current) {
+            clearTimeout(controlsTimeout.current);
+          }
+        } catch (error) {
+          console.error("Error in useFocusEffect cleanup:", error);
+          // Even if there's an error, try to end the analytics session
+          try {
+            analyticsService.endPlaySession();
+          } catch (analyticsError) {
+            console.error("Error ending analytics session:", analyticsError);
+          }
         }
       };
-    }, [player, isPlaying])
+    }, [player]) // Only depend on player to avoid frequent re-runs
   );
 
   // Handle video end event
   useEffect(() => {
-    if (player) {
-      const playToEndListener = player.addListener("playToEnd", () => {
-        if (currentVideoIndex < videoClips.length - 1) {
-          handleNext();
-        }
-      });
+    if (player && typeof player.addListener === "function") {
+      try {
+        const playToEndListener = player.addListener("playToEnd", async () => {
+          await analyticsService.endPlaySession(true); // Mark as completed
 
-      return () => {
-        playToEndListener?.remove();
-      };
+          if (currentVideoIndex < videoClips.length - 1) {
+            handleNext();
+          }
+        });
+
+        return () => {
+          try {
+            playToEndListener?.remove();
+          } catch (error) {
+            console.error("Error removing video end listener:", error);
+          }
+        };
+      } catch (error) {
+        console.error("Error setting up video end listener:", error);
+      }
     }
   }, [currentVideoIndex, videoClips.length, handleNext, player]);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      analyticsService.cleanup();
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -225,7 +316,15 @@ export default function VideoPlayer() {
           {/* Video Player */}
           <View style={styles.videoContainer}>
             <View style={styles.videoWrapper}>
-              <VideoView ref={videoViewRef} style={styles.video} player={player} allowsFullscreen={false} allowsPictureInPicture={false} contentFit="contain" nativeControls={false} />
+              {/* Only render VideoView if we have a valid player and current video */}
+              {player && currentVideo?.url ? (
+                <VideoView ref={videoViewRef} style={styles.video} player={player} allowsFullscreen={false} allowsPictureInPicture={false} contentFit="contain" nativeControls={false} />
+              ) : (
+                <View style={[styles.video, { backgroundColor: "black", justifyContent: "center", alignItems: "center" }]}>
+                  <ActivityIndicator size="large" color="#0a7ea4" />
+                  <ThemedText style={{ color: "white", marginTop: 10 }}>Loading video...</ThemedText>
+                </View>
+              )}
 
               {/* Touch Overlay for Controls */}
               <Pressable style={styles.touchOverlay} onPress={handleVideoPress}>
@@ -240,8 +339,12 @@ export default function VideoPlayer() {
                           <TouchableOpacity
                             style={styles.volumeButton}
                             onPress={() => {
-                              if (player) {
-                                player.muted = !player.muted;
+                              try {
+                                if (player && typeof player.muted !== "undefined") {
+                                  player.muted = !player.muted;
+                                }
+                              } catch (error) {
+                                console.error("Error toggling mute:", error);
                               }
                             }}
                           >

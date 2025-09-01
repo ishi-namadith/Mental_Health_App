@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Mindful Cradle",
-    "slug": "Mental_Health_App",
+    "slug": "mentalhealthapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -50,8 +50,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "dc47c586-7850-446e-ad91-2fd93db11ba4"
+        "projectId": "5a52b1a8-11de-446e-bf12-f55d9e006198"
       }
-    }
+    },
+    "owner": "syrex"
   }
 }

@@ -26,9 +26,9 @@ export default function LanguageSelectionScreen() {
             </ThemedText>
 
             <ThemedView style={styles.languageContainer}>
-              <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("Sinhala")}>
+              {/* <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("Sinhala")}>
                 <ThemedText style={styles.languageText}>Sinhala</ThemedText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity style={[styles.languageButton, { backgroundColor: inputBackgroundColor }]} onPress={() => handleLanguageSelect("English")}>
                 <ThemedText style={styles.languageText}>English</ThemedText>
