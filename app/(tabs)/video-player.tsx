@@ -328,7 +328,7 @@ export default function VideoPlayer() {
             <View style={styles.videoWrapper}>
               {/* Only render VideoView if we have a valid player and current video */}
               {player && currentVideo?.url ? (
-                <VideoView ref={videoViewRef} style={styles.video} player={player} allowsFullscreen={false} allowsPictureInPicture={false} contentFit="contain" nativeControls={false} />
+                <VideoView ref={videoViewRef} style={styles.video} player={player} allowsFullscreen={false} allowsPictureInPicture={false} contentFit="cover" nativeControls={false} />
               ) : (
                 <View style={[styles.video, { backgroundColor: "black", justifyContent: "center", alignItems: "center" }]}>
                   <ActivityIndicator size="large" color="#0a7ea4" />
@@ -481,19 +481,18 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     paddingTop: 60,
   },
   videoContainer: {
-    aspectRatio: 16 / 10,
+    flex: 1,
     backgroundColor: "black",
-    marginHorizontal: 15,
-    borderRadius: 12,
+    marginHorizontal: 0,
+    borderRadius: 0,
     overflow: "hidden",
-    alignSelf: "center",
-    width: "95%",
-    maxWidth: 600,
-    minHeight: 320,
+    alignSelf: "stretch",
+    width: "100%",
+    minHeight: "70%",
   },
   videoWrapper: {
     flex: 1,
@@ -512,7 +511,7 @@ const styles = StyleSheet.create({
   },
   centeredContainer: {
     width: "100%",
-    maxWidth: "80%",
+    maxWidth: "100%",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -662,9 +661,12 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     padding: 20,
-    margin: 20,
+    margin: 10,
     borderRadius: 12,
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 40,
+    flex: 0,
+    minHeight: 80,
   },
   videoTitle: {
     marginBottom: 10,
