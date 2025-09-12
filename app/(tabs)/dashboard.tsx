@@ -80,7 +80,7 @@ export default function Dashboard() {
             Library
           </ThemedText>
 
-          <ThemedText style={styles.subtitle}>Discover calming videos to help with your mental well-being</ThemedText>
+          <ThemedText style={styles.subtitle}>Discover your state of mindfulness with guided meditation for your mental well-being</ThemedText>
 
           {loading ? (
             <ActivityIndicator size="large" color="#0a7ea4" style={styles.loader} />

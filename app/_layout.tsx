@@ -32,7 +32,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       }
     } else {
       // If user is authenticated and trying to access onboarding screens
-      if (currentRoute === "language" || currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup") {
+      // Allow language screen for authenticated users (for changing language settings)
+      if (currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup") {
         router.replace("/(tabs)/dashboard");
       }
     }

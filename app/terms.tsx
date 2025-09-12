@@ -42,7 +42,7 @@ export default function TermsScreen() {
 
             <ThemedText style={styles.paragraph}>2. User Data: Your personal information and usage data will only be used to improve your experience and will not be shared with third parties without your explicit consent.</ThemedText>
 
-            <ThemedText style={styles.paragraph}>3. Medical Disclaimer: This app is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have.</ThemedText>
+            <ThemedText style={styles.paragraph}>3. Medical Disclaimer: This app is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your psychologist or other qualified health provider with any questions you may have.</ThemedText>
 
             <ThemedText style={styles.paragraph}>4. Content Usage: All content provided in this app is for informational purposes only. Users are not permitted to reproduce, distribute, or commercially exploit the content.</ThemedText>
 

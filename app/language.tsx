@@ -30,7 +30,7 @@ export default function LanguageSelectionScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}>
           <ThemedView style={styles.centerContent}>
             <ThemedText type="title" style={styles.title}>
-              Initial Language Selection
+              Language Selection
             </ThemedText>
 
             <ThemedView style={styles.languageContainer}>

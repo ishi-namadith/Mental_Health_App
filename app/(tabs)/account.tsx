@@ -14,6 +14,11 @@ export default function AccountScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // For language settings navigation
+  const handleLanguageSettings = () => {
+    router.push("/language" as any);
+  };
+
   const handleSignOut = async () => {
     setLoading(true);
     try {
@@ -51,6 +56,13 @@ export default function AccountScreen() {
               Profile Information
             </ThemedText>
             <ThemedText style={styles.infoItem}>Email: {user.email}</ThemedText>
+          </ThemedView>
+
+          {/* Language Settings Card */}
+          <ThemedView style={styles.card}>
+            <TouchableOpacity style={styles.languageButton} onPress={handleLanguageSettings}>
+              <ThemedText style={styles.languageButtonText}>Language Settings</ThemedText>
+            </TouchableOpacity>
           </ThemedView>
 
           <ThemedView style={styles.card}>
@@ -109,6 +121,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   signOutButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  languageButton: {
+    width: "100%",
+    height: 50,
+    backgroundColor: "#007AFF",
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 0,
+  },
+  languageButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",

@@ -6,7 +6,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BackgroundLayout } from "@/components/BackgroundLayout";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
@@ -289,29 +288,29 @@ export default function VideoPlayer() {
 
   if (loading) {
     return (
-      <BackgroundLayout>
+      <View style={styles.blackBackground}>
         <SafeAreaView style={styles.container}>
           <ActivityIndicator size="large" color="#0a7ea4" style={styles.loader} />
         </SafeAreaView>
-      </BackgroundLayout>
+      </View>
     );
   }
 
   if (error || !currentVideo) {
     return (
-      <BackgroundLayout>
+      <View style={styles.blackBackground}>
         <SafeAreaView style={styles.container}>
           <ThemedText style={styles.errorText}>{error || "Video not found"}</ThemedText>
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
             <ThemedText style={styles.backButtonText}>Go Back</ThemedText>
           </TouchableOpacity>
         </SafeAreaView>
-      </BackgroundLayout>
+      </View>
     );
   }
 
   return (
-    <BackgroundLayout>
+    <View style={styles.blackBackground}>
       <SafeAreaView style={styles.container}>
         {/* Header with back button and title */}
         <View style={styles.header}>
@@ -447,11 +446,15 @@ export default function VideoPlayer() {
           </ThemedView>
         </View>
       </SafeAreaView>
-    </BackgroundLayout>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  blackBackground: {
+    flex: 1,
+    backgroundColor: "black",
+  },
   container: {
     flex: 1,
     backgroundColor: "transparent",
@@ -646,7 +649,7 @@ const styles = StyleSheet.create({
   },
   seekText: {
     position: "absolute",
-    bottom: 2,
+    bottom: -15,
     fontSize: 8,
     color: "white",
     fontWeight: "bold",
