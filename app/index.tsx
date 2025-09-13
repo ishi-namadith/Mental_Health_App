@@ -3,7 +3,7 @@ import { Redirect } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function IndexScreen() {
-  const { user, isLoading, error } = useAuth();;
+  const { user, isLoading, error } = useAuth();
 
   // Show loading spinner
   if (isLoading) {
@@ -25,6 +25,6 @@ export default function IndexScreen() {
   if (user) {
     return <Redirect href="/(tabs)/dashboard" />;
   } else {
-    return <Redirect href="/language" />;
+    return <Redirect href="/login" />;
   }
 }

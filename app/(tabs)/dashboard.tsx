@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 60,
-    backgroundColor: "transparent", // Make container transparent to show background
+    backgroundColor: "transparent", 
   },
   accountButton: {
     position: "absolute",

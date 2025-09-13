@@ -14,7 +14,6 @@ export default function AccountScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // For language settings navigation
   const handleLanguageSettings = () => {
     router.push("/language" as any);
   };

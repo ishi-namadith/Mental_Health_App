@@ -33,7 +33,7 @@ export default function LoginScreen() {
       }
 
       if (data?.user) {
-        router.replace("/(tabs)/dashboard");
+        router.replace("/language");
       }
     } catch (error) {
       Alert.alert("Unexpected Error", "An unexpected error occurred. Please try again.");

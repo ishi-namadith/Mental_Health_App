@@ -1,10 +1,11 @@
+import SplashScreen from "@/components/SplashScreen";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -23,18 +24,17 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!user) {
       // If user is not authenticated and trying to access protected routes
       if (currentRoute.startsWith("(tabs)/")) {
-        // Check if language is selected, if not go to language selection
+        router.replace("/login");
+      }
+    } else {
+      // If user is authenticated
+      if (currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup") {
+        // Check if language is selected after login
         if (!selectedLanguage) {
           router.replace("/language");
         } else {
-          router.replace("/login");
+          router.replace("/(tabs)/dashboard");
         }
-      }
-    } else {
-      // If user is authenticated and trying to access onboarding screens
-      // Allow language screen for authenticated users (for changing language settings)
-      if (currentRoute === "terms" || currentRoute === "login" || currentRoute === "signup") {
-        router.replace("/(tabs)/dashboard");
       }
     }
   }, [user, selectedLanguage, segments, isLoading, languageLoading, router]);
@@ -46,9 +46,11 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [showSplash, setShowSplash] = useState(true);
 
-  if (!loaded) {
-    return null;
+  // Show splash screen while fonts are loading or during splash animation
+  if (!loaded || showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
   // Always use light theme
